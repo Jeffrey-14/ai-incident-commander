@@ -4,38 +4,39 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'main', url: 'git@github.com:Jeffrey-14/ai-incident-commander.git'
             }
         }
 
-        stage('Setup Python') {
+        stage('Install Dependencies') {
             steps {
-                sh '''
-                python3 --version
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
+                sh 'python3 -m venv venv'
+                sh '. venv/bin/activate && pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                . venv/bin/activate
-                pytest
-                '''
+                sh '. venv/bin/activate && pytest'
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
+            steps {
+                echo 'Deploying project...'
+                // Add your deployment commands here
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Build and tests succeeded'
-        }
         failure {
-            echo '❌ Build or tests failed'
+            mail to: 'you@example.com',
+                 subject: "Build failed: ${currentBuild.fullDisplayName}",
+                 body: "Check Jenkins for details."
         }
     }
 }
