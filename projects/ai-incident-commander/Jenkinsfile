@@ -2,26 +2,40 @@ pipeline {
     agent any
 
     stages {
-        stage('Install') {
+        stage('Checkout') {
             steps {
-                sh 'python -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                checkout scm
             }
         }
 
-        stage('Test') {
+        stage('Setup Python') {
             steps {
-                sh '. venv/bin/activate && pytest'
+                sh '''
+                python3 --version
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Deploy') {
-            when {
-                branch 'main'
-            }
+        stage('Run Tests') {
             steps {
-                echo 'Deploying application...'
+                sh '''
+                . venv/bin/activate
+                pytest
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Build and tests succeeded'
+        }
+        failure {
+            echo '❌ Build or tests failed'
         }
     }
 }
