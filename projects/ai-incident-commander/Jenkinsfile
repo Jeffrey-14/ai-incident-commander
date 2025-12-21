@@ -10,20 +10,30 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '. venv/bin/activate && pytest'
+                sh '''
+                . venv/bin/activate
+                pytest
+                '''
             }
         }
 
         stage('Deploy') {
+            when {
+                branch 'main'
+            }
             steps {
-                echo 'Deploy stage (mock deployment)'
+                echo 'Deploying AI Incident Commander...'
             }
         }
     }
