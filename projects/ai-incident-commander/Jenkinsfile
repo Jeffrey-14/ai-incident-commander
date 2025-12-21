@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'git@github.com:Jeffrey-14/ai-incident-commander.git'
+                checkout scm
             }
         }
 
@@ -22,21 +22,9 @@ pipeline {
         }
 
         stage('Deploy') {
-            when {
-                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
-            }
             steps {
-                echo 'Deploying project...'
-                // Add your deployment commands here
+                echo 'Deploy stage (mock deployment)'
             }
-        }
-    }
-
-    post {
-        failure {
-            mail to: 'you@example.com',
-                 subject: "Build failed: ${currentBuild.fullDisplayName}",
-                 body: "Check Jenkins for details."
         }
     }
 }
