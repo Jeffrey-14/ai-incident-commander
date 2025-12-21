@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -8,10 +12,16 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Setup Virtual Environment') {
             steps {
                 sh '''
+                # Ensure a clean start
+                rm -rf venv
+                
+                # Create fresh virtual environment
                 python3 -m venv venv
+                
+                # Activate and install dependencies
                 . venv/bin/activate
                 pip install --upgrade pip
                 pip install -r requirements.txt
@@ -23,7 +33,7 @@ pipeline {
             steps {
                 sh '''
                 . venv/bin/activate
-                pytest
+                pytest -v
                 '''
             }
         }
@@ -34,7 +44,25 @@ pipeline {
             }
             steps {
                 echo 'Deploying AI Incident Commander...'
+                // Add your actual deployment steps here later
+                // e.g., AWS, Docker push, Heroku, etc.
             }
+        }
+    }
+
+    post {
+        always {
+            // Clean up virtual environment to save space
+            sh 'rm -rf venv'
+            
+            // Optional: clean entire workspace for shared agents
+            // cleanWs()
+        }
+        success {
+            echo 'Pipeline succeeded! All tests passed.'
+        }
+        failure {
+            echo 'Pipeline failed. Check the test output above for details.'
         }
     }
 }
