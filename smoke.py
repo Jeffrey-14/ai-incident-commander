@@ -1,1 +1,1 @@
-^xX^XX^XX
+print("Smoke test passed! ✅")
