@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', 
+                    url: 'git@github.com:Jeffrey-14/ai-incident-commander.git', 
+                    credentialsId: 'your-ssh-credential-id'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                if [ ! -d "venv" ]; then
+                  python3 -m venv venv
+                fi
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r $WORKSPACE/requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pytest
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Deploying AI Incident Commander...'
+            }
+        }
+    }
+}
